@@ -12,35 +12,46 @@ typedef struct _square{
     char state;
     bool cleaned;
     int step;
-    int step_tmp;
-    bool visited;
-    int dir_to_walk;
 } Square;
+
+typedef struct _point{
+    int x;
+    int y;
+} Point;
+
+int row, col, battery;
+void go_to_a_square(Square now, Square target);
+void go_back(Square now, Square A, Square B);
+int find_dirty_square(Square peta);
+Square find_target(Square peta);
+Square R;
+Square target;
+int total_step = 0;
+int dirty_square = 0;
+Square back_way[1010][1010];
+Square peta[1010][1010];
+
+ifstream input;
+ofstream output;
+ofstream tmp;
 
 int main()
 {
-    ifstream input;
-    ofstream output;
     input.open("floor.data");
     output.open("final.path");
+    tmp.open("record.path");
 
-    int row, col, battery;
 
     if(input.is_open()){
         input >> row >> col >> battery;
         cout << row << ' ' << col << ' ' << battery << '\n';
 
-        Square peta[row][col];
-        int R_row, R_col;
-        Square R;
-        int target_row, target_col;
         int now_bat;
         Square now_pos, last_pos;
         int step_now=0;
         now_bat = battery;
         const int dir[4][2] = {{0,1}, {1,0}, {0,-1}, {-1,0}};
         Square que[row*col];
-        int dirty_square=0;
 
         for(int i=0; i<row; i++){
             for(int j=0; j<col; j++){
@@ -49,38 +60,10 @@ int main()
                 (peta[i][j]).x = j;
                 (peta[i][j]).cleaned = false;
                 (peta[i][j]).step = 0;
-                (peta[i][j]).step_tmp = -1;
-                (peta[i][j]).dir_to_walk = 0;
-                (peta[i][j]).visited = false;
+
                 if((peta[i][j]).state == 'R'){
                     R = peta[i][j];
                     now_pos = peta[i][j];
-                }
-            }
-        }
-        //cout << now_row << " " << now_col << endl;
-
-        for(int i=1; i<row-1; i++){
-            for(int j=1; j<col-1; j++){
-                if(peta[i][j].state == '1'|| peta[i][j].state=='R')
-                    continue;
-                dirty_square++;
-                for(int detect=0; detect<4; detect++){
-                    int tmp_x = (peta[i][j]).x + dir[detect][1];
-                    int tmp_y = (peta[i][j]).y + dir[detect][0];
-                    //cout << "col: " << tmp_x << "  row: " << tmp_y << endl;
-                    if(tmp_x<0 || tmp_x>=col || tmp_y<0 || tmp_y>=row){
-                        continue;
-                    }
-                    Square next = peta[tmp_y][tmp_x];
-                    //cout << "next: " << next.state << endl;
-                    if(next.state == '1'|| next.state=='R')
-                        continue;
-                    else if(next.state=='0'){
-                        //peta[tmp_y][tmp_x].step = peta[i][j].step + 1;
-                        peta[i][j].dir_to_walk++;
-                        //cout << "peta[" << i << "][" << j << "].dir_to_walk = " << peta[i][j].dir_to_walk << endl;
-                    }
                 }
             }
         }
@@ -90,23 +73,24 @@ int main()
         que_front++;
         while(que_front > que_tail){
             Square curr = que[que_tail];
+
             que_tail++;
             for(int detect=0; detect<4; detect++){
                 int tmp_x = curr.x + dir[detect][1];
                 int tmp_y = curr.y + dir[detect][0];
-                cout << "col: " << tmp_x << "  row: " << tmp_y << endl;
+                //cout << "col: " << tmp_x << "  row: " << tmp_y << endl;
                 if(tmp_x<0 || tmp_x>=col || tmp_y<0 || tmp_y>=row){
                     continue;
                 }
                 Square next = peta[tmp_y][tmp_x];
-                cout << "next: " << next.state << endl;
+                //cout << "next: " << next.state << endl;
                 if(next.state == '1'|| next.state=='R')
                     continue;
                 else if(next.state=='0' && next.step==0){
                     que[que_front] = next;
                     que_front++;
                     peta[tmp_y][tmp_x].step = peta[curr.y][curr.x].step + 1;
-                    //cout << "peta[" << i << "][" << j << "].dir_to_walk = " << peta[i][j].dir_to_walk << endl;
+                    back_way[tmp_y][tmp_x] = curr;
                 }
             }
         }
@@ -121,127 +105,84 @@ int main()
             cout << endl;
         }
 
-        Square target = now_pos;
-        int max_step=0;
-        int min_step=row*col;
-        int min_dir_to_walk=5;
-        bool need_charge=false;
-        bool found=false;
-        bool ended=false;
+        for(int i=0; i<row; i++){
+            for(int j=0; j<col; j++){
+                if(peta[i][j].state=='0')
+                    cout << back_way[i][j].y  << " " << back_way[i][j].x << " || ";
+                else
+                    cout << "X ";
+            }
+            cout << endl;
+        }
 
-        while(1){
-            need_charge=false;
-            found=false;
-            ended=false;
-            if(target==now_pos){
-                min_step = now_pos.step;
-                for(int detect=0; detect<4; detect++){
-                    int tmp_x = now_pos.x + dir[detect][1];
-                    int tmp_y = now_pos.y + dir[detect][0];
-                    if(tmp_x<0 || tmp_x>=col || tmp_y<0 || tmp_y>=row || peta[tmp_y][tmp_x].state=='1'){
-                        continue;
-                    }
-                    Square next = peta[tmp_y][tmp_x];
-                    if(next.step < min_step){
-                        min_step = next.step;
-                        target = next;
-                        if(target.cleaned){
-                            min_dir_to_walk = 5;
-                        }
-                        else{
-                            min_dir_to_walk = target.dir_to_walk;
-                        }
-                    }
-                    else if(next.step == min_step){
-                        if(next.dir_to_walk < min_dir_to_walk && next.cleaned==false){
-                            min_step = next.step;
-                            taregt = next;
-                            min_dir_to_walk = target.dir_to_walk;
-                        }
-                    }
-                }
+        for(int i = 0; i < row; i++){
+            for(int j = 0; j < col; j++){
+                //cout << "j" << j;
+                if(peta[i][j].state == '0' && peta[i][j].cleaned==false)
+                    dirty_square++;
             }
         }
-            for(int i=1; i<row-1; i++){
-                for(int j=1; j<col-1; j++){
-                    if(peta[i][j].state == '1'|| peta[i][j].state=='R')
-                        continue;
-                    for(int detect=0; detect<4; detect++){
-                        int tmp_x = (peta[i][j]).x + dir[detect][1];
-                        int tmp_y = (peta[i][j]).y + dir[detect][0];
-                        //cout << "col: " << tmp_x << "  row: " << tmp_y << endl;
-                        if(tmp_x<0 || tmp_x>=col || tmp_y<0 || tmp_y>=row){
-                            continue;
-                        }
-                        Square next = peta[tmp_y][tmp_x];
-                        //cout << "next: " << next.state << endl;
-                        if(next.state == '1'|| next.state=='R')
-                            continue;
-                        else if(next.state=='0'){
-                            //peta[tmp_y][tmp_x].step = peta[i][j].step + 1;
-                            peta[i][j].dir_to_walk++;
-                            //cout << "peta[" << i << "][" << j << "].dir_to_walk = " << peta[i][j].dir_to_walk << endl;
-                        }
-                    }
-                }
-            }
-            ended = false;
-        }
-        if(now_pos.cleaned==false){
-            now_pos.cleaned = true;
-            dirty_square--;
-        }
-        if(ended==false){
-            last_pos = now_pos;
-        }
-        now_bat--;
-        if(now_pos==R){
-            now_bat = battery;
-            if(ended==true){
-                for(int i=0; i<row; i++){
-                    for(int j=0; j<col; j++){
-                        input >> (peta[i][j]).state;
-                        (peta[i][j]).y = i;
-                        (peta[i][j]).x = j;
-                        (peta[i][j]).cleaned = false;
-                        (peta[i][j]).step = 0;
-                        (peta[i][j]).step_tmp = -1;
-                        (peta[i][j]).dir_to_walk = 0;
-                        (peta[i][j]).visited = false;
-                        if((peta[i][j]).state == 'R'){
-                            R = peta[i][j];
-                            now_pos = peta[i][j];
-                        }
-                    }
-                }
-            //cout << now_row << " " << now_col << endl;
 
-                for(int i=1; i<row-1; i++){
-                    for(int j=1; j<col-1; j++){
-                        if(peta[i][j].state == '1'|| peta[i][j].state=='R')
-                            continue;
-                        for(int detect=0; detect<4; detect++){
-                            int tmp_x = (peta[i][j]).x + dir[detect][1];
-                            int tmp_y = (peta[i][j]).y + dir[detect][0];
-                            //cout << "col: " << tmp_x << "  row: " << tmp_y << endl;
-                            if(tmp_x<0 || tmp_x>=col || tmp_y<0 || tmp_y>=row){
-                                continue;
-                            }
-                            Square next = peta[tmp_y][tmp_x];
-                            //cout << "next: " << next.state << endl;
-                            if(next.state == '1'|| next.state=='R')
-                                continue;
-                            else if(next.state=='0'){
-                                //peta[tmp_y][tmp_x].step = peta[i][j].step + 1;
-                                peta[i][j].dir_to_walk++;
-                                //cout << "peta[" << i << "][" << j << "].dir_to_walk = " << peta[i][j].dir_to_walk << endl;
-                            }
-                        }
+        while(dirty_square!=0){
+            cout << "dirty_square" << dirty_square << endl;
+            int max_step = -10;
+            for(int i=0;i<row;i++){
+                for(int j=0;j<col;j++){
+                    if(peta[i][j].step > max_step && peta[i][j].state=='0' && peta[i][j].cleaned==false){
+                        max_step = peta[i][j].step;
+                        target = peta[i][j];
                     }
                 }
             }
+            cout << "target: " <<target.y << " " << target.x << endl;
+            total_step += 2*target.step;
+
+            go_to_a_square(target, now_pos);
+            go_back(target, now_pos, target);
         }
+        tmp.close();
     }
     input.close();
+    output << total_step << endl;
+    output << R.y << " " << R.x << endl;
+    ifstream tmp_in;
+    tmp_in.open("record.path");
+    if(!tmp_in)
+        cout << "failed";
+    int x, y;
+    for(int i=0;i<total_step;i++){
+        tmp_in >> y >> x;
+        output << y << " " << x << endl;
+    }
+    tmp_in.close();
+    output.close();
     return 0;
+}
+
+void go_to_a_square(Square now, Square target){
+	if((now.x==target.x) && (now.y==target.y)){
+		return;
+	}
+	else{
+        go_to_a_square(back_way[now.y][now.x], target);
+		if(now.state == '0' && peta[now.y][now.x].cleaned==false){
+			peta[now.y][now.x].cleaned = true;
+			dirty_square--;
+		}
+		tmp << now.y << ' ' << now.x << endl;
+		//cout << "!!" << now.y << ' ' << now.x << "!!!"<< endl;
+	}
+}
+
+void go_back(Square now, Square A, Square B){
+	if((now.x==A.x) && (now.y==A.y)){
+		tmp << now.y << ' ' << now.x << endl;
+		return;
+	}
+	else{
+		if((now.x!=B.x) || (now.y!=B.y)){
+            tmp << now.y << ' ' << now.x << endl;
+		}
+        go_back(back_way[now.y][now.x], A, B);
+	}
 }
