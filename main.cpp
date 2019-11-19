@@ -2,6 +2,7 @@
 #include <istream>
 #include <fstream>
 using namespace std;
+
 typedef struct _square{
     int x;
     int y;
@@ -9,11 +10,6 @@ typedef struct _square{
     bool cleaned;
     int step;
 } Square;
-
-typedef struct _point{
-    int x;
-    int y;
-} Point;
 
 int row, col, battery;
 void go_to_a_square(Square now, Square target);
@@ -36,7 +32,6 @@ int main()
     input.open("floor.data");
     output.open("final.path");
     tmp.open("record.path");
-
 
     if(input.is_open()){
         input >> row >> col >> battery;
@@ -117,8 +112,7 @@ int main()
     output << R.y << " " << R.x << endl;
     ifstream tmp_in;
     tmp_in.open("record.path");
-    if(!tmp_in)
-        cout << "failed";
+
     int x, y;
     for(int i=0;i<total_step;i++){
         tmp_in >> y >> x;
