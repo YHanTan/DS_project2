@@ -1,11 +1,7 @@
 #include <iostream>
-#include <string>
 #include <istream>
-#include <cstring>
 #include <fstream>
-
 using namespace std;
-
 typedef struct _square{
     int x;
     int y;
@@ -44,7 +40,6 @@ int main()
 
     if(input.is_open()){
         input >> row >> col >> battery;
-        cout << row << ' ' << col << ' ' << battery << '\n';
 
         int now_bat;
         Square now_pos, last_pos;
@@ -78,12 +73,10 @@ int main()
             for(int detect=0; detect<4; detect++){
                 int tmp_x = curr.x + dir[detect][1];
                 int tmp_y = curr.y + dir[detect][0];
-                //cout << "col: " << tmp_x << "  row: " << tmp_y << endl;
                 if(tmp_x<0 || tmp_x>=col || tmp_y<0 || tmp_y>=row){
                     continue;
                 }
                 Square next = peta[tmp_y][tmp_x];
-                //cout << "next: " << next.state << endl;
                 if(next.state == '1'|| next.state=='R')
                     continue;
                 else if(next.state=='0' && next.step==0){
@@ -95,36 +88,14 @@ int main()
             }
         }
 
-        for(int i=0; i<row; i++){
-            for(int j=0; j<col; j++){
-                if(peta[i][j].state=='0')
-                    cout << (peta[i][j]).step << " ";
-                else
-                    cout << "X ";
-            }
-            cout << endl;
-        }
-
-        for(int i=0; i<row; i++){
-            for(int j=0; j<col; j++){
-                if(peta[i][j].state=='0')
-                    cout << back_way[i][j].y  << " " << back_way[i][j].x << " || ";
-                else
-                    cout << "X ";
-            }
-            cout << endl;
-        }
-
         for(int i = 0; i < row; i++){
             for(int j = 0; j < col; j++){
-                //cout << "j" << j;
                 if(peta[i][j].state == '0' && peta[i][j].cleaned==false)
                     dirty_square++;
             }
         }
 
         while(dirty_square!=0){
-            cout << "dirty_square" << dirty_square << endl;
             int max_step = -10;
             for(int i=0;i<row;i++){
                 for(int j=0;j<col;j++){
@@ -134,7 +105,6 @@ int main()
                     }
                 }
             }
-            cout << "target: " <<target.y << " " << target.x << endl;
             total_step += 2*target.step;
 
             go_to_a_square(target, now_pos);
@@ -170,7 +140,6 @@ void go_to_a_square(Square now, Square target){
 			dirty_square--;
 		}
 		tmp << now.y << ' ' << now.x << endl;
-		//cout << "!!" << now.y << ' ' << now.x << "!!!"<< endl;
 	}
 }
 
