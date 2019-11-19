@@ -14,8 +14,6 @@ typedef struct _square{
 int row, col, battery;
 void go_to_a_square(Square now, Square target);
 void go_back(Square now, Square A, Square B);
-int find_dirty_square(Square peta);
-Square find_target(Square peta);
 Square R;
 Square target;
 int total_step = 0;
