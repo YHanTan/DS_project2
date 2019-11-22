@@ -13,7 +13,6 @@ typedef struct _square{
 
 int row, col, battery;
 void go_to_a_square(Square now, Square target);
-//void go_back(Square now, Square A, Square B);
 void go_back(Square target, Square R);
 Square R;
 Square target;
@@ -98,10 +97,9 @@ int main()
                 }
             }
             total_step += 2*target.step;
-
+            //tmp << "taregt: " <<target.y << ' ' << target.x << endl;
             go_to_a_square(target, now_pos);
             go_back(target, R);
-            //go_back(target, now_pos,target);
         }
         tmp.close();
     }
@@ -135,24 +133,12 @@ void go_to_a_square(Square now, Square target){
 	}
 }
 
-/*void go_back(Square now, Square A, Square B){
-	if((now.x==A.x) && (now.y==A.y)){
-		tmp << now.y << ' ' << now.x << endl;
-		return;
-	}
-	else{
-		if((now.x!=B.x) || (now.y!=B.y)){
-            tmp << now.y << ' ' << now.x << endl;
-		}
-        go_back(back_way[now.y][now.x], A, B);
-	}
-}*/
-
 void go_back(Square target, Square R)
 {
+    //tmp << "target: " << target.y << ' ' << target.x <<endl;
     Square curr=target;
     Square next;
-    Square real_next;
+    Square real_next = R;
     while(1)
     {
         for(int detect=0; detect<4; detect++){
@@ -169,20 +155,25 @@ void go_back(Square target, Square R)
                 continue;
             else if(next.state=='0' && next.cleaned==false){
                 real_next = next;
+                break;
             }
             else if(next.state=='0'){
                 real_next = next;
             }
         }
-        curr = real_next;
-        tmp << curr.y << ' ' << curr.x << endl;
+        if((real_next.y != R.y) || (real_next.x!=R.x)){
+            curr = real_next;
+            tmp << curr.y << ' ' << curr.x << endl;
+        }
         if((curr.y==R.y-1 && curr.x==R.x) || (curr.y==R.y+1 && curr.x==R.x) || (curr.y==R.y && curr.x==R.x-1) || (curr.y==R.y && curr.x==R.x+1))
         {
-            //cout << curr.y << ' ' << curr.x << endl;
+            //tmp << "break\n";
             break;
         }
     }
+    //tmp << R.y << ' ' << R.x << endl;
     tmp << R.y << ' ' << R.x << endl;
+    //tmp << "curr: " << curr.y << ' ' << curr.x <<endl;
     //cout << R.y << ' ' << R.x << endl;
     return;
 }
