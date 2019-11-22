@@ -96,8 +96,9 @@ int main()
                     }
                 }
             }
+            if(peta[target.y][target.x].cleaned==true)
+                break;
             total_step += 2*target.step;
-            //tmp << "taregt: " <<target.y << ' ' << target.x << endl;
             go_to_a_square(target, now_pos);
             go_back(target, R);
         }
@@ -135,7 +136,6 @@ void go_to_a_square(Square now, Square target){
 
 void go_back(Square target, Square R)
 {
-    //tmp << "target: " << target.y << ' ' << target.x <<endl;
     Square curr=target;
     Square next;
     Square real_next = R;
@@ -155,6 +155,7 @@ void go_back(Square target, Square R)
                 continue;
             else if(next.state=='0' && next.cleaned==false){
                 real_next = next;
+                peta[next.y][next.x].cleaned = true;
                 break;
             }
             else if(next.state=='0'){
@@ -167,13 +168,9 @@ void go_back(Square target, Square R)
         }
         if((curr.y==R.y-1 && curr.x==R.x) || (curr.y==R.y+1 && curr.x==R.x) || (curr.y==R.y && curr.x==R.x-1) || (curr.y==R.y && curr.x==R.x+1))
         {
-            //tmp << "break\n";
             break;
         }
     }
-    //tmp << R.y << ' ' << R.x << endl;
     tmp << R.y << ' ' << R.x << endl;
-    //tmp << "curr: " << curr.y << ' ' << curr.x <<endl;
-    //cout << R.y << ' ' << R.x << endl;
     return;
 }
