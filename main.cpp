@@ -13,13 +13,16 @@ typedef struct _square{
 
 int row, col, battery;
 void go_to_a_square(Square now, Square target);
-void go_back(Square now, Square A, Square B);
+//void go_back(Square now, Square A, Square B);
+void go_back(Square target, Square R);
 Square R;
 Square target;
 int total_step = 0;
 int dirty_square = 0;
 Square back_way[1010][1010];
 Square peta[1010][1010];
+Square que[1010*1010];
+const int dir[4][2] = {{0,1}, {1,0}, {0,-1}, {-1,0}};
 
 ifstream input;
 ofstream output;
@@ -30,7 +33,6 @@ int main()
     input.open("floor.data");
     output.open("final.path");
     tmp.open("record.path");
-
     if(input.is_open()){
         input >> row >> col >> battery;
 
@@ -38,8 +40,6 @@ int main()
         Square now_pos, last_pos;
         int step_now=0;
         now_bat = battery;
-        const int dir[4][2] = {{0,1}, {1,0}, {0,-1}, {-1,0}};
-        Square que[row*col];
 
         for(int i=0; i<row; i++){
             for(int j=0; j<col; j++){
@@ -61,7 +61,6 @@ int main()
         que_front++;
         while(que_front > que_tail){
             Square curr = que[que_tail];
-
             que_tail++;
             for(int detect=0; detect<4; detect++){
                 int tmp_x = curr.x + dir[detect][1];
@@ -101,7 +100,8 @@ int main()
             total_step += 2*target.step;
 
             go_to_a_square(target, now_pos);
-            go_back(target, now_pos, target);
+            go_back(target, R);
+            //go_back(target, now_pos,target);
         }
         tmp.close();
     }
@@ -135,7 +135,7 @@ void go_to_a_square(Square now, Square target){
 	}
 }
 
-void go_back(Square now, Square A, Square B){
+/*void go_back(Square now, Square A, Square B){
 	if((now.x==A.x) && (now.y==A.y)){
 		tmp << now.y << ' ' << now.x << endl;
 		return;
@@ -146,4 +146,43 @@ void go_back(Square now, Square A, Square B){
 		}
         go_back(back_way[now.y][now.x], A, B);
 	}
+}*/
+
+void go_back(Square target, Square R)
+{
+    Square curr=target;
+    Square next;
+    Square real_next;
+    while(1)
+    {
+        for(int detect=0; detect<4; detect++){
+            int tmp_x = curr.x + dir[detect][1];
+            int tmp_y = curr.y + dir[detect][0];
+            if(tmp_x<0 || tmp_x>=col || tmp_y<0 || tmp_y>=row){
+                continue;
+            }
+            next = peta[tmp_y][tmp_x];
+            if(next.step >= curr.step){
+                continue;
+            }
+            if(next.state == '1'|| next.state=='R')
+                continue;
+            else if(next.state=='0' && next.cleaned==false){
+                real_next = next;
+            }
+            else if(next.state=='0'){
+                real_next = next;
+            }
+        }
+        curr = real_next;
+        tmp << curr.y << ' ' << curr.x << endl;
+        if((curr.y==R.y-1 && curr.x==R.x) || (curr.y==R.y+1 && curr.x==R.x) || (curr.y==R.y && curr.x==R.x-1) || (curr.y==R.y && curr.x==R.x+1))
+        {
+            //cout << curr.y << ' ' << curr.x << endl;
+            break;
+        }
+    }
+    tmp << R.y << ' ' << R.x << endl;
+    //cout << R.y << ' ' << R.x << endl;
+    return;
 }
